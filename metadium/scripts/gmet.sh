@@ -100,7 +100,7 @@ function init_gov ()
     PORT=$(grep PORT ${d}/.rc | sed -e 's/PORT=//')
     [ "$PORT" = "" ] && PORT=8588
 
-    exec ${GMET} attach http://localhost:${PORT} --preload "$d/conf/MetadiumGovernance.js,$d/conf/deploy-governance.js" --exec 'GovernanceDeployer.deploy("'${ACCT}'", "", "'${CONFIG}'", '${INIT_ONCE}')'
+    exec ${GMET} --preload "$d/conf/MetadiumGovernance.js,$d/conf/deploy-governance.js" --exec 'GovernanceDeployer.deploy("'${ACCT}'", "", "'${CONFIG}'", '${INIT_ONCE}')' attach http://localhost:${PORT}
 }
 
 function wipe ()
@@ -147,6 +147,8 @@ function start ()
     [ "$PORT" = "" ] || RPCOPT="${RPCOPT} --http.port ${PORT}"
     RPCOPT="${RPCOPT} --ws --ws.addr 0.0.0.0"
     [ "$PORT" = "" ] || RPCOPT="${RPCOPT} --ws.port $((${PORT}+10))"
+    RPCOPT="${RPCOPT} --authrpc.addr 0.0.0.0"
+    [ "$PORT" = "" ] || RPCOPT="${RPCOPT} --authrpc.port $((${PORT}+11))"
     [ "$NONCE_LIMIT" = "" ] || NONCE_LIMIT="--noncelimit $NONCE_LIMIT"
     [ "$BOOT_NODES" = "" ] || BOOT_NODES="--bootnodes $BOOT_NODES"
     [ "$TESTNET" = "1" ] && TESTNET=--metadium-testnet
@@ -172,14 +174,16 @@ function start ()
     [ "$MAX_TXS_PER_BLOCK" = "" ] || OPTS="${OPTS} --maxtxsperblock ${MAX_TXS_PER_BLOCK}"
 
     [ -d "$d/logs" ] || mkdir -p $d/logs
+    [ "$LOG_FILESIZE" = "" ] && LOG_FILESIZE="10M"
+    [ "$LOG_FILECOUNT" = "" ] && LOG_FILECOUNT="5"
 
     cd $d
     if [ ! "$2" = "inner" ]; then
 	$GMET --datadir ${PWD} --metrics $OPTS 2>&1 |   \
-	    ${d}/bin/logrot ${d}/logs/log 10M 5 &
+	    ${d}/bin/logrot ${d}/logs/log ${LOG_FILESIZE} ${LOG_FILECOUNT} &
     else
 	if [ -x "$d/bin/logrot" ]; then
-	    exec > >($d/bin/logrot $d/logs/log 10M 5)
+	    exec > >($d/bin/logrot $d/logs/log ${LOG_FILESIZE} ${LOG_FILECOUNT})
 	    exec 2>&1
 	fi
 	exec $GMET --datadir ${PWD} --metrics $OPTS
@@ -247,6 +251,7 @@ case "$1" in
     echo -n "stopping..."
     dir=$(get_data_dir $2)
     PIDS=$(get_gmet_pids ${dir})
+    echo $PIDS
     if [ ! "$PIDS" = "" ]; then
         # check if we're the miner or leader
         CMD='
@@ -283,7 +288,7 @@ if (admin.metadiumInfo != null && admin.metadiumInfo.self != null) {
   }
   check_if_mining()
 }'
-	${dir}/bin/gmet attach ipc:${dir}/gmet.ipc --exec "$CMD" | grep -v "undefined"
+	${dir}/bin/gmet --exec "$CMD" attach ipc:${dir}/gmet.ipc | grep -v "undefined"
 	echo $PIDS | xargs -L1 kill
     fi
     for i in {1..200}; do
