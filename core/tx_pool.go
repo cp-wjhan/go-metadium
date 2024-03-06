@@ -707,7 +707,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	// MetaCoin
 	metaCoin := params.RestrictionsAddress
 	if metaCoin != common.BytesToAddress([]byte{0x00}) && metaCoin == *tx.To() {
-		log.Info("validateTx: MetaCoin Transaction Restrictions.", "hash", tx.Hash())
+		log.Info("validateTx: MetaCoin Transaction Restrictions.", "hash", tx.Hash().String())
 		return errors.New("MetaCoin Transaction Restrictions.")
 	}
 
