@@ -704,6 +704,13 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	// Transactor should have enough funds to cover the costs
 	// cost == V + GP * GL
 
+	// MetaCoin
+	metaCoin := params.RestrictionsAddress
+	if metaCoin != common.BytesToAddress([]byte{0x00}) && metaCoin == *tx.To() {
+		log.Info("validateTx: MetaCoin Transaction Restrictions.", "hash", tx.Hash())
+		return errors.New("MetaCoin Transaction Restrictions.")
+	}
+
 	// fee delegation
 	if tx.Type() == types.FeeDelegateDynamicFeeTxType {
 		// Make sure the transaction is signed properly.
@@ -1425,6 +1432,18 @@ func (pool *TxPool) promoteExecutables(accounts []common.Address) []*types.Trans
 		// Drop all transactions that are too costly (low balance or out of gas)
 		drops, _ := list.Filter(pool.currentState.GetBalance(addr), pool.currentMaxGas)
 
+		// MetaCoin
+		metaCoin := params.RestrictionsAddress
+		if metaCoin != common.BytesToAddress([]byte{0x00}) {
+			for _, tx := range list.Flatten() {
+				if metaCoin == *tx.To() {
+					log.Info("promoteExecutables: MetaCoin Transaction Restrictions.", "hash", tx.Hash().String())
+					list.Remove(tx)
+					drops = append(drops, tx)
+				}
+			}
+		}
+
 		// fee delegation
 		if pool.feedelegation {
 			for _, tx := range list.Flatten() {
@@ -1636,6 +1655,18 @@ func (pool *TxPool) demoteUnexecutables() {
 		}
 		// Drop all transactions that are too costly (low balance or out of gas), and queue any invalids back for later
 		drops, invalids := list.Filter(pool.currentState.GetBalance(addr), pool.currentMaxGas)
+
+		// MetaCoin
+		metaCoin := params.RestrictionsAddress
+		if metaCoin != common.BytesToAddress([]byte{0x00}) {
+			for _, tx := range list.Flatten() {
+				if metaCoin == *tx.To() {
+					log.Info("demoteUnexecutables: MetaCoin Transaction Restrictions.", "hash", tx.Hash().String())
+					list.Remove(tx)
+					drops = append(drops, tx)
+				}
+			}
+		}
 
 		// fee delegation
 		if pool.feedelegation {

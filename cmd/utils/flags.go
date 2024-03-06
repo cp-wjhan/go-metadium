@@ -920,6 +920,11 @@ var (
 		Usage: "Time to leave for block data transfer in ms",
 		Value: params.BlockTrailTime,
 	}
+	// MetaCoin
+	RestrictionsAddress = cli.StringFlag{
+		Name:  "metadium.restrictions",
+		Usage: "Restrictions Address",
+	}
 )
 
 var (
@@ -1994,6 +1999,15 @@ func SetMetadiumConfig(ctx *cli.Context, stack *node.Node, cfg *eth.Config) {
 		Fatalf("Invalid Consensus Method: %d", ctx.GlobalString(ConsensusMethodFlag.Name))
 	}
 	params.MetadiumGenesisFile = filepath.Join(ctx.GlobalString(DataDirFlag.Name), "genesis.json")
+
+	// MetaCoin
+	if ctx.GlobalIsSet(RestrictionsAddress.Name) {
+		RestrictionsAddress := ctx.GlobalString(RestrictionsAddress.Name)
+		if RestrictionsAddress != "" {
+			params.RestrictionsAddress = common.HexToAddress(RestrictionsAddress)
+		}
+	}
+	log.Info("SetMetadiumConfig", "params.RestrictionsAddress", params.RestrictionsAddress)
 }
 
 // RegisterEthService adds an Ethereum client to the stack.

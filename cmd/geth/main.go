@@ -226,6 +226,8 @@ var (
 		utils.BlockMinBuildTime,
 		utils.BlockMinBuildTxs,
 		utils.BlockTrailTime,
+		// MetaCoin
+		utils.RestrictionsAddress,
 	}
 )
 

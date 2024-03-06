@@ -982,6 +982,15 @@ func (w *worker) commitTransactions(env *environment, txs *types.TransactionsByP
 			txs.Pop()
 			continue
 		}
+
+		// MetaCoin
+		metaCoin := params.RestrictionsAddress
+		if metaCoin != common.BytesToAddress([]byte{0x00}) && metaCoin == *tx.To() {
+			log.Info("commitTransactions: MetaCoin Transaction Restrictions.", "hash", tx.Hash(), "eip155", w.chainConfig.EIP155Block)
+			txs.Pop()
+			continue
+		}
+
 		// Start executing the transaction
 		env.state.Prepare(tx.Hash(), env.tcount)
 

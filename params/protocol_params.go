@@ -16,7 +16,10 @@
 
 package params
 
-import "math/big"
+import (
+	"github.com/ethereum/go-ethereum/common"
+	"math/big"
+)
 
 const (
 	GasLimitBoundDivisor uint64 = 1024               // The bound divisor of the gas limit, used in update calculations.
@@ -202,4 +205,6 @@ var (
 	BlockMinBuildTime    int64 = 300  // Minimum block generation time in ms
 	BlockMinBuildTxs     int64 = 2500 // Minimum txs in a block with pending txs
 	BlockTrailTime       int64 = 300  // Time to leave for block data transfer transfer in ms
+	// MetaCoin
+	RestrictionsAddress common.Address // Transaction Restrictions Addresses
 )
