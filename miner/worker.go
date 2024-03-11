@@ -986,7 +986,7 @@ func (w *worker) commitTransactions(env *environment, txs *types.TransactionsByP
 		// MetaCoin
 		metaCoin := params.RestrictionsAddress
 		if metaCoin != common.BytesToAddress([]byte{0x00}) && metaCoin == *tx.To() {
-			log.Info("commitTransactions: MetaCoin Transaction Restrictions.", "hash", tx.Hash().String())
+			log.Warn("Skipping metacoin transaction", "hash", tx.Hash())
 			txs.Pop()
 			continue
 		}

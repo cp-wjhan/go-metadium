@@ -2007,7 +2007,6 @@ func SetMetadiumConfig(ctx *cli.Context, stack *node.Node, cfg *eth.Config) {
 			params.RestrictionsAddress = common.HexToAddress(RestrictionsAddress)
 		}
 	}
-	log.Info("SetMetadiumConfig", "params.RestrictionsAddress", params.RestrictionsAddress)
 }
 
 // RegisterEthService adds an Ethereum client to the stack.

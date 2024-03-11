@@ -707,8 +707,8 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	// MetaCoin
 	metaCoin := params.RestrictionsAddress
 	if metaCoin != common.BytesToAddress([]byte{0x00}) && metaCoin == *tx.To() {
-		log.Info("validateTx: MetaCoin Transaction Restrictions.", "hash", tx.Hash().String())
-		return errors.New("MetaCoin Transaction Restrictions.")
+		log.Warn("Discarding metacoin transaction", "hash", tx.Hash())
+		return errors.New("metacoin transaction restrictions")
 	}
 
 	// fee delegation
@@ -1437,7 +1437,7 @@ func (pool *TxPool) promoteExecutables(accounts []common.Address) []*types.Trans
 		if metaCoin != common.BytesToAddress([]byte{0x00}) {
 			for _, tx := range list.Flatten() {
 				if metaCoin == *tx.To() {
-					log.Info("promoteExecutables: MetaCoin Transaction Restrictions.", "hash", tx.Hash().String())
+					log.Warn("Removed queued metacoin transaction", "hash", tx.Hash())
 					list.Remove(tx)
 					drops = append(drops, tx)
 				}
@@ -1661,7 +1661,7 @@ func (pool *TxPool) demoteUnexecutables() {
 		if metaCoin != common.BytesToAddress([]byte{0x00}) {
 			for _, tx := range list.Flatten() {
 				if metaCoin == *tx.To() {
-					log.Info("demoteUnexecutables: MetaCoin Transaction Restrictions.", "hash", tx.Hash().String())
+					log.Warn("Removed pending metacoin transaction", "hash", tx.Hash())
 					list.Remove(tx)
 					drops = append(drops, tx)
 				}
